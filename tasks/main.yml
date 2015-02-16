@@ -1,0 +1,87 @@
+---
+
+# Fluentd server
+
+# set sysctl
+- name: sysctl tuning
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  tags: fluentd
+  when: ansible_virtualization_type != 'lxc'
+  ignore_errors: yes
+  with_items:
+    - { name: net.ipv4.tcp_tw_recycle, value: 1 }
+    - { name: net.ipv4.tcp_tw_reuse, value: 1 }
+    - { name: net.ipv4.ip_local_port_range, value: '10240 65535' }
+
+# set limits.conf
+- name: limits.conf tuning
+  lineinfile:
+    dest: /etc/security/limits.conf
+    line: "{{ item }}"
+  tags: fluentd
+  with_items:
+    - 'root soft nofile 65536'
+    - 'root hard nofile 65536'
+    - '* soft nofile 65536'
+    - '* hard nofile 65536'
+
+# install apt key
+- name: add official treasure data repo key
+  apt_key:
+    url: http://packages.treasuredata.com/GPG-KEY-td-agent
+    state: present
+
+# set dedicated repository
+- name: add official treasure data repo (amd64)
+  apt_repository:
+    repo: "deb [arch=amd64] http://packages.treasuredata.com/2/{{ ansible_lsb.id|lower }}/{{ ansible_lsb.codename|lower }}/ {{ ansible_lsb.codename|lower }} contrib"
+    state: present
+  when:
+    - ansible_userspace_architecture == "x86_64"
+
+- name: add official treasure data repo
+  apt_repository:
+    repo: "deb http://packages.treasuredata.com/2/{{ ansible_lsb.id|lower }}/{{ ansible_lsb.codename|lower }}/ {{ ansible_lsb.codename|lower }} contrib"
+    state: present
+  when:
+    - ansible_userspace_architecture != "x86_64"
+
+# install fluentd with dependencies
+- name: install fluentd
+  apt:
+    name: "{{ item }}"
+    state: latest
+  tags: fluentd
+  with_items:
+    - td-agent
+
+# Install plugins
+- include: plugins.yml
+  when: fluentd_plugins|count > 0
+
+# fluentd configuration
+- name: Create /etc/td-agent/config.d
+  file:
+    path: /etc/td-agent/config.d
+    state: directory
+
+- name: Make fluentd config file
+  template:
+    src: td-agent.conf.j2
+    dest: /etc/td-agent/td-agent.conf
+    owner: root
+    group: root
+    mode: 644
+    backup: yes
+  notify: restart fluentd
+  tags:
+    - make_config
+
+- name: Enable and start td_agent service
+  service:
+    name: td-agent
+    state: started
+    enabled: true

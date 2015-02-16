@@ -1,0 +1,12 @@
+---
+
+- name: restart fluentd
+  service:
+    name: td-agent
+    state: restarted
+
+# default td-agent haven't reload
+- name: reload fluentd
+  service:
+    name: td-agent
+    state: reloaded

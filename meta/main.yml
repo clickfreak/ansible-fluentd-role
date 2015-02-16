@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Konstantin Novakovsky
+  company: "Selectel, LLC"
+  license: GPLv3
+  min_ansible_version: 1.7
+  platforms:
+   - name: Debian
+     versions:
+      - wheezy
+   - name: Ubuntu
+     versions:
+      - precise
+      - trusty
+  categories:
+   - system
+   - log
+dependencies: []
+

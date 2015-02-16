@@ -1,0 +1,22 @@
+---
+
+- name: install fluentd plugins dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+    force: yes
+  tags: fluentd
+  with_items:
+    - build-essential
+    - ruby-dev
+    - libcurl4-gnutls-dev
+    - make
+
+- name: install fluend plugins
+  gem:
+    name: "{{ item }}"
+    state: present
+    executable: /usr/sbin/td-agent-gem
+    user_install: no
+  with_items: fluentd_plugins
+  notify: restart fluentd

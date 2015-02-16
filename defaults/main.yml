@@ -1,0 +1,40 @@
+---
+
+fluentd_plugins: []
+
+fluentd_sources:
+  - comment: "live debugging agent"
+    type: "debug_agent"
+    params:
+      - bind: "127.0.0.1"
+      - port: "24230"
+
+  - comment: "HTTP input"
+    type: "http"
+    params:
+      - port: "8888"
+
+fluentd_matches:
+  - comment: "match tag=debug.** and dump to console"
+    match: "debug.**"
+    type: stdout
+
+fluentd_includes:
+  - /etc/td-agent/config.d
+
+  # EXAMPLE
+  # - comment: "send all to elasticsearch"
+  #   match: "**"
+  #   type: "elasticsearch"
+  #   params:
+  #     - logstash_format: "true"
+  #     - host: "127.0.0.1"
+  #     - port: "9200"
+
+  # - comment: "forward all to some server"
+  #   match:  "**"
+  #   type: "forward"
+  #   params:
+  #     - server:
+  #         - host: "{{ ansible_hostname }}"
+  #         - port 24224
