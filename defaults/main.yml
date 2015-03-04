@@ -2,6 +2,8 @@
 
 fluentd_plugins: []
 
+fluentd_sysctl_tuning: false
+
 fluentd_sources:
   - comment: "live debugging agent"
     type: "debug_agent"
