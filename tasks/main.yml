@@ -11,7 +11,7 @@
   tags: fluentd
   when:
     - ansible_virtualization_type != 'lxc'
-    - fluentd_sysctl_tuning is true
+    - fluentd_sysctl_tuning == true
   ignore_errors: yes
   with_items:
     - { name: net.ipv4.tcp_tw_recycle, value: 1 }
